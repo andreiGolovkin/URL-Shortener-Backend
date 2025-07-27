@@ -10,10 +10,12 @@ import uuid
 def make_new_record(request: HttpRequest):
     response = JsonResponse({})
     
+    print(request.headers)
+    
     if request.method == "GET":
-        request_body = json.loads(request.body)
+        request_body = request.GET
         
-        is_unique = request_body['unique']
+        is_unique = request_body['unique'] == 'true'
         url = request_body['url']
         code = ""
         
@@ -30,8 +32,11 @@ def make_new_record(request: HttpRequest):
             code = URL.objects.filter(origin_url=url)[0].shortened_code
         
         obj = {
-            "code": code
+            "code": code,
+            "short_url": request.build_absolute_uri(f'r/{code}')
         }
+        
+        print(obj)
         
         response = JsonResponse(obj)
     else:
@@ -44,7 +49,9 @@ def get_summary(request: HttpRequest):
     response = JsonResponse({})
     
     if request.method == "GET":
-        request_body = json.loads(request.body)
+        request_body = request.GET
+        
+        print(request_body)
         
         code = request_body['code']
         if len(URL.objects.filter(shortened_code=code)) > 0:
